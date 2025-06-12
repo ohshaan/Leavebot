@@ -1,5 +1,5 @@
 import requests
-from Leavebot.config.settings import EMPLOYEE_DETAILS_API, ERP_BEARER_TOKEN
+from leavebot.config.settings import EMPLOYEE_DETAILS_API, ERP_BEARER_TOKEN
 
 def fetch_manager_details(manager_emp_id):
     """
