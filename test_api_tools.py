@@ -11,6 +11,7 @@ def pretty_print(title, obj):
     import json
     print(f"\n--- {title} ---")
     print(json.dumps(obj, indent=2, ensure_ascii=False))
+    
 
 EMP_ID = 432
 CGM_ID = 1
