@@ -1,5 +1,5 @@
 import requests
-from config.settings import LEAVE_HISTORY_API, ERP_BEARER_TOKEN
+from leavebot.config.settings import LEAVE_HISTORY_API, ERP_BEARER_TOKEN
 from .cache_utils import LEAVE_HISTORY_CACHE
 
 # We assume `leave_types` (fetched via fetch_leave_types) is passed in to map Lvm_ID_N → code

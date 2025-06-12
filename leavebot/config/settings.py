@@ -16,7 +16,9 @@ PROCESSED_JSON_PATH = os.path.join("data", "api_json")
 
 # Build the default embeddings path relative to this settings file. This keeps
 # the configuration portable across different environments.
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+# BASE_DIR should point to the project root. "settings.py" lives in
+# leavebot/config/, so we need to go three directories up.
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 default_doc_path = os.path.join(
     BASE_DIR, "data", "doc_embeddings", "combined_doc_knowledge.json"
 )
