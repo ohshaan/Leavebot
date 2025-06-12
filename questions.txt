@@ -1,19 +1,19 @@
-“What is my air ticket eligibility status?”
+"What is my air ticket eligibility status?"
 
-“When can I next claim an air ticket?”
+"When can I next claim an air ticket?"
 
-“Show me my most recent leave applications.”
+"Show me my most recent leave applications."
 
-“Give me the last two leaves I applied for.”
+"Give me the last two leaves I applied for."
 
-“List my latest three leave requests with their dates.”
+"List my latest three leave requests with their dates."
 
-“Have I claimed an air ticket in the past year?”
+"Have I claimed an air ticket in the past year?"
 
-“What percent of my ticket fare am I eligible for?”
+"What percent of my ticket fare am I eligible for?"
 
-“When did I last apply for leave?”
+"When did I last apply for leave?"
 
-“Tell me about my most recent sick or casual leaves.” (returns recent leaves of any type)
+"Tell me about my most recent sick or casual leaves." (returns recent leaves of any type)
 
-“What was my last approved leave?”
+"What was my last approved leave?"
