@@ -1,14 +1,4 @@
 # leavebot_copy/scripts/leave_utils.py
-from scripts.fetch_leave_types import fetch_leave_types
-from scripts.fetch_leave_history import fetch_leave_history
-from scripts.leave_utils import total_leave_taken, leaves_by_type, leave_codes_summary
-
-lt = fetch_leave_types(5469, 1)
-lh = fetch_leave_history(5469, lt)
-
-print(leave_codes_summary(lh))              # see which codes actually came back
-print(total_leave_taken(lh, lt, "sick"))    # should now count SL/SLN/SLH
-print(leaves_by_type(lh, lt))               # should show each code + desc + days
 
 from datetime import datetime
 from collections import Counter, defaultdict
