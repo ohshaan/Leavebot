@@ -163,3 +163,36 @@ def leave_codes_summary(leave_history):
     Debug utility: Return a Counter of codes found in leave_history.
     """
     return Counter(rec.get("LeaveGrid_Lvm_Code_V") for rec in leave_history)
+
+
+def recent_leaves(leave_history, count=5):
+    """Return a list of the most recent leave records."""
+
+    def parse_date(date_str):
+        if not date_str:
+            return None
+        for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%d", "%d-%b-%Y"):
+            try:
+                return datetime.strptime(date_str[:19], fmt)
+            except Exception:
+                continue
+        return None
+
+    sorted_history = sorted(
+        leave_history,
+        key=lambda rec: parse_date(rec.get("LeaveGrid_Ela_FromDate_D")) or datetime.min,
+        reverse=True,
+    )
+
+    result = []
+    for rec in sorted_history[: int(count)]:
+        result.append(
+            {
+                "code": rec.get("LeaveGrid_Lvm_Code_V"),
+                "description": rec.get("LeaveGrid_Lvm_Description_V"),
+                "from": (rec.get("LeaveGrid_Ela_FromDate_D") or "")[:10],
+                "to": (rec.get("LeaveGrid_Ela_ToDate_D") or "")[:10],
+                "status": rec.get("LeaveGrid_Status"),
+            }
+        )
+    return result
