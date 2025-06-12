@@ -218,13 +218,19 @@ def run_chat():
             break
 
         messages.append({"role": "user", "content": user_input})
-        response = openai.chat.completions.create(
-            model="gpt-4o",
-            messages=messages,
-            tools=tools,
-            tool_choice="auto",
-            max_tokens=512,
-        )
+        try:
+            response = openai.chat.completions.create(
+                model="gpt-4o",
+                messages=messages,
+                tools=tools,
+                tool_choice="auto",
+                max_tokens=512,
+            )
+        except openai.AuthenticationError:
+            print(
+                "OpenAI authentication failed. Please set the OPENAI_API_KEY environment variable with a valid API key."
+            )
+            return
 
         msg = response.choices[0].message
 
@@ -244,9 +250,15 @@ def run_chat():
                     "name": name,
                     "content": str(result)
                 })
-            response = openai.chat.completions.create(
-                model="gpt-4o", messages=messages, tools=tools, max_tokens=512
-            )
+            try:
+                response = openai.chat.completions.create(
+                    model="gpt-4o", messages=messages, tools=tools, max_tokens=512
+                )
+            except openai.AuthenticationError:
+                print(
+                    "OpenAI authentication failed. Please set the OPENAI_API_KEY environment variable with a valid API key."
+                )
+                return
             msg = response.choices[0].message
 
         print("LeaveBot:", msg.content)

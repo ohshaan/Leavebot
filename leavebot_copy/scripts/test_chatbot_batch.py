@@ -1,6 +1,7 @@
 import sys
 import os
 import json
+import openai
 
 # Add leavebot_copy as a package root for imports
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -50,13 +51,19 @@ def run_batch_test(emp_id=5469, questions_file=QUESTIONS_FILE):
         ]
 
         # First assistant response
-        response = chat_engine.openai.chat.completions.create(
-            model="gpt-4o",
-            messages=messages,
-            tools=chat_engine.tools,
-            tool_choice="auto",
-            max_tokens=512,
-        )
+        try:
+            response = chat_engine.openai.chat.completions.create(
+                model="gpt-4o",
+                messages=messages,
+                tools=chat_engine.tools,
+                tool_choice="auto",
+                max_tokens=512,
+            )
+        except openai.AuthenticationError:
+            print(
+                "OpenAI authentication failed. Please set the OPENAI_API_KEY environment variable with a valid API key."
+            )
+            return
         msg = response.choices[0].message
 
         # Multi-step tool calling loop
@@ -86,12 +93,18 @@ def run_batch_test(emp_id=5469, questions_file=QUESTIONS_FILE):
             print("====================================================\n")
 
             # Call OpenAI again, including tools!
-            response = chat_engine.openai.chat.completions.create(
-                model="gpt-4o",
-                messages=messages,
-                tools=chat_engine.tools,
-                max_tokens=512,
-            )
+            try:
+                response = chat_engine.openai.chat.completions.create(
+                    model="gpt-4o",
+                    messages=messages,
+                    tools=chat_engine.tools,
+                    max_tokens=512,
+                )
+            except openai.AuthenticationError:
+                print(
+                    "OpenAI authentication failed. Please set the OPENAI_API_KEY environment variable with a valid API key."
+                )
+                return
             msg = response.choices[0].message
 
         # Final answer (when no more tool_calls)
