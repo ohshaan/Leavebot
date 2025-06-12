@@ -20,7 +20,13 @@ def next_air_ticket_eligibility(anniv_date, last_ticket_date=None, period_years=
     """
     if not anniv_date:
         return None
-    anniv = datetime.strptime(anniv_date, "%d-%b-%Y") if '-' in anniv_date else datetime.strptime(anniv_date, "%Y-%m-%d")
+    try:
+        anniv = datetime.strptime(anniv_date, "%d-%b-%Y")
+    except (TypeError, ValueError):
+        try:
+            anniv = datetime.strptime(anniv_date, "%Y-%m-%d")
+        except (TypeError, ValueError):
+            return None
     last = datetime.strptime(last_ticket_date, "%Y-%m-%d") if last_ticket_date else anniv
     return (last + timedelta(days=period_years*365)).strftime("%Y-%m-%d")
 
