@@ -2,7 +2,7 @@
 
 import requests
 from leavebot.config.settings import LEAVE_TYPE_API, ERP_BEARER_TOKEN
-from .cache_utils import LEAVE_TYPES_CACHE
+from ..core.cache_utils import LEAVE_TYPES_CACHE
 
 def fetch_leave_types(emp_id, cgm_id=1):
     """
