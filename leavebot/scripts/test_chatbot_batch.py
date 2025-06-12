@@ -11,6 +11,8 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from ..chatbot import chat_engine
+
+ChatEngine = chat_engine.ChatEngine
 from ..config.settings import DOC_EMBEDDINGS_PATH
 
 QUESTIONS_FILE = os.path.join(REPO_ROOT, 'questions.txt')
@@ -23,17 +25,8 @@ def run_batch_test(
     to_date="2024-12-31",
 ):
     """Run a batch of questions against the chatbot."""
-    # Reset chatbot state for each test session
-    chat_engine.EMP_ID = emp_id
-
-    # Preload and cache all employee data
-    (
-        chat_engine.employee,
-        chat_engine.leave_types,
-        chat_engine.leave_history,
-        chat_engine.leave_balances,
-        chat_engine.manager,
-    ) = chat_engine.preload_data(emp_id, from_date, to_date, cgm_id)
+    engine = ChatEngine()
+    engine.preload_data(emp_id, from_date, to_date, cgm_id)
 
     # Read questions
     with open(questions_file, 'r', encoding='utf-8') as f:
@@ -82,7 +75,7 @@ def run_batch_test(
                 tool_name = call.function.name
                 args_json = call.function.arguments
                 args_dict = json.loads(args_json) if args_json else {}
-                tool_response = chat_engine.route_tool(tool_name, args_dict)
+                tool_response = engine.route_tool(tool_name, args_dict)
                 messages.append({
                     "role": "tool",
                     "tool_call_id": call.id,
