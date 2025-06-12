@@ -20,7 +20,10 @@ def run_batch_test(emp_id=5469, questions_file=QUESTIONS_FILE):
     # Re-fetch all employee data for this emp_id
     chat_engine.employee = chat_engine.fetch_employee_details(emp_id)
     chat_engine.leave_types = chat_engine.fetch_leave_types(emp_id, chat_engine.CGM_ID)
-    chat_engine.leave_history = chat_engine.fetch_leave_history(emp_id)
+    # Pass leave_types into fetch_leave_history so each record gets its code
+    chat_engine.leave_history = chat_engine.fetch_leave_history(
+        emp_id, chat_engine.leave_types
+    )
     chat_engine.leave_balances = {
         lt["Lpd_ID_N"]: chat_engine.fetch_leave_balance(emp_id, lt["Lpd_ID_N"], chat_engine.FROM_DATE, chat_engine.TO_DATE)
         for lt in chat_engine.leave_types
