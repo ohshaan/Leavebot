@@ -56,7 +56,7 @@ except Exception as e:
 
 # 4. Test Leave History
 try:
-    history = fetch_leave_history(EMP_ID)
+    history = fetch_leave_history(EMP_ID, leave_types)
     pretty_print("Leave History", history)
 except Exception as e:
     print(f"[ERROR] Leave History: {e}")
