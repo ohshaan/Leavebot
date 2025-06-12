@@ -1,4 +1,4 @@
-# leavebot_copy/scripts/fetch_leave_types.py
+# Fetch leave types from the HR API
 
 import requests
 from leavebot.config.settings import LEAVE_TYPE_API, ERP_BEARER_TOKEN
