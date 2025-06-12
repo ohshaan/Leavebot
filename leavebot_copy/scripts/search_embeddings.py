@@ -2,20 +2,7 @@ import os
 import json
 import numpy as np
 import openai
-from leavebot.config.settings import DOC_EMBEDDINGS_PATH
-
-import os
-import sys
-
-print("search_embeddings.py loaded from:", __file__)
-try:
-    from leavebot_copy.config.settings import DOC_EMBEDDINGS_PATH
-except Exception as e:
-    print("Failed import from leavebot.config.settings:", e)
-    raise
-
-print("DOC_EMBEDDINGS_PATH (search_embeddings.py):", DOC_EMBEDDINGS_PATH)
-print("File exists (embedding):", os.path.exists(DOC_EMBEDDINGS_PATH))
+from leavebot_copy.config.settings import DOC_EMBEDDINGS_PATH
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 

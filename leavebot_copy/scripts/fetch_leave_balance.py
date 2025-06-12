@@ -1,5 +1,5 @@
 import requests
-from leavebot.config.settings import LEAVE_SUMMARY_API, ERP_BEARER_TOKEN
+from leavebot_copy.config.settings import LEAVE_SUMMARY_API, ERP_BEARER_TOKEN
 
 def fetch_leave_balance(emp_id, lpd_id, from_date, to_date):
     """
