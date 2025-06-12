@@ -33,7 +33,7 @@ You can run a scripted batch of questions using:
 python -m leavebot.scripts.test_chatbot_batch <emp_id>
 ```
 
-Replace `<emp_id>` with the employee ID you want to test. The script resets the chatbot state for that employee, reads questions from `questions.txt`, and prints each question with the bot’s answer. Expect verbose debugging output that shows any tool calls made to fetch API data or search policy documents.
+Replace `<emp_id>` with the employee ID you want to test. The script at `leavebot/scripts/test_chatbot_batch.py` resets the chatbot state for that employee, reads questions from `questions.txt`, and prints each question with the bot’s answer. Expect verbose debugging output that shows any tool calls made to fetch API data or search policy documents.
 
 ## Dependencies
 
