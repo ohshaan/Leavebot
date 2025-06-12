@@ -1,4 +1,4 @@
-# leavebot_copy/scripts/leave_utils.py
+# Helper utilities for computing leave statistics
 
 from datetime import datetime
 from collections import Counter, defaultdict

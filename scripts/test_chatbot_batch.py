@@ -3,7 +3,7 @@ import os
 import json
 import openai
 
-# Add leavebot_copy as a package root for imports
+# Ensure the project root is on the Python path for package imports
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, '..'))
 if PROJECT_ROOT not in sys.path:

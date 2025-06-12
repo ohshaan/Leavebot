@@ -1,4 +1,4 @@
-# leavebot_copy/scripts/employee_utils.py
+# Helper functions for employee data
 
 from datetime import datetime
 
