@@ -4,6 +4,8 @@ from leavebot_copy.scripts.fetch_leave_balance import fetch_leave_balance
 from leavebot_copy.scripts.fetch_leave_history import fetch_leave_history
 from leavebot_copy.scripts.fetch_manager import get_manager_contact   # <--- NEW
 from leavebot_copy.scripts.search_embeddings import search_embeddings
+from leavebot_copy.scripts.leave_utils import recent_leaves
+from leavebot_copy.scripts.air_ticket_utils import air_ticket_info
 
 def pretty_print(title, obj):
     import json
@@ -61,7 +63,27 @@ try:
 except Exception as e:
     print(f"[ERROR] Leave History: {e}")
 
-# 5. Test Document Embedding Search
+# 5. Air Ticket Info
+try:
+    if 'history' in locals() and 'leave_types' in locals():
+        leave_balances = {
+            lt["Lpd_ID_N"]: fetch_leave_balance(EMP_ID, lt["Lpd_ID_N"], FROM_DATE, TO_DATE)
+            for lt in leave_types
+        }
+        ticket = air_ticket_info(leave_balances, history)
+        pretty_print("Air Ticket Info", ticket)
+except Exception as e:
+    print(f"[ERROR] Air Ticket Info: {e}")
+
+# 6. Recent Leaves
+try:
+    if 'history' in locals():
+        recent = recent_leaves(history, count=2)
+        pretty_print("Recent Leaves", recent)
+except Exception as e:
+    print(f"[ERROR] Recent Leaves: {e}")
+
+# 7. Test Document Embedding Search
 try:
     results = search_embeddings("leave policy")
     pretty_print("Embedding Search (leave policy)", results)

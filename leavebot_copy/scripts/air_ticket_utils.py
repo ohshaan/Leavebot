@@ -37,4 +37,34 @@ def has_claimed_air_ticket(leave_history, year=None):
             return True
     return False
 
+
+def air_ticket_info(leave_balances, leave_history):
+    """Return eligibility details for employee air ticket."""
+    eligible_balance = None
+    for lb in leave_balances.values():
+        if is_air_ticket_eligible(lb):
+            eligible_balance = lb
+            break
+
+    if not eligible_balance:
+        return {"eligible": False}
+
+    percent = get_air_ticket_percent(eligible_balance)
+    anniv = eligible_balance.get("Emp_AnnivDate_D")
+
+    last_claim = None
+    for rec in leave_history:
+        if str(rec.get("Ela_AirTicketReq_N", "0")) == "1":
+            date = rec.get("LeaveGrid_dtTravelDate") or rec.get("LeaveGrid_Ela_FromDate_D")
+            if date and (not last_claim or date > last_claim):
+                last_claim = date
+
+    next_date = next_air_ticket_eligibility(anniv, last_claim) if anniv else None
+    return {
+        "eligible": True,
+        "percent": percent,
+        "next_eligible_date": next_date,
+        "last_claim_date": last_claim,
+    }
+
 # Add additional helper functions here as required.
