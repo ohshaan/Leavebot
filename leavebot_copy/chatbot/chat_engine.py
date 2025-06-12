@@ -7,7 +7,8 @@ from leavebot_copy.scripts.leave_utils import (
     leaves_by_type,
     available_leave_types,
     leave_type_balance,
-    is_on_leave_today
+    is_on_leave_today,
+    recent_leaves,
 )
 from leavebot_copy.scripts.employee_utils import (
     years_of_service,
@@ -19,6 +20,7 @@ from leavebot_copy.scripts.fetch_leave_types import fetch_leave_types
 from leavebot_copy.scripts.fetch_leave_balance import fetch_leave_balance
 from leavebot_copy.scripts.fetch_leave_history import fetch_leave_history  # now expects (emp_id, leave_types)
 from leavebot_copy.scripts.search_embeddings import search_embeddings  # RAG tool
+from leavebot_copy.scripts.air_ticket_utils import air_ticket_info
 
 
 # Setup OpenAI API key
@@ -79,6 +81,14 @@ def tool_is_on_leave_today(**kwargs):
     """Returns whether the employee is on leave today."""
     return is_on_leave_today(leave_history)
 
+def tool_recent_leaves(count=5, **kwargs):
+    """Returns the most recent leave applications."""
+    return recent_leaves(leave_history, count=count)
+
+def tool_air_ticket_info(**kwargs):
+    """Returns air ticket eligibility information."""
+    return air_ticket_info(leave_balances, leave_history)
+
 def tool_search_policy(question=None, **kwargs):
     """Search HR policy docs for answers to policy questions."""
     results = search_embeddings(question, top_k=2)
@@ -99,6 +109,8 @@ TOOL_MAP = {
     "employee_contact":    tool_employee_contact,
     "manager_contact":     tool_manager_contact,
     "is_on_leave_today":   tool_is_on_leave_today,
+    "recent_leaves":       tool_recent_leaves,
+    "air_ticket_info":     tool_air_ticket_info,
     "search_policy":       tool_search_policy,
 }
 
@@ -182,6 +194,27 @@ tools = [
     {
         "type": "function",
         "function": {
+            "name": "recent_leaves",
+            "description": "Returns the most recent leave applications.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "count": {"type": "integer", "description": "Number of records to return"}
+                }
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "air_ticket_info",
+            "description": "Returns air ticket eligibility information.",
+            "parameters": {"type": "object", "properties": {}},
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "search_policy",
             "description": "Search HR policy for answers to questions not covered by API.",
             "parameters": {
@@ -218,13 +251,19 @@ def run_chat():
             break
 
         messages.append({"role": "user", "content": user_input})
-        response = openai.chat.completions.create(
-            model="gpt-4o",
-            messages=messages,
-            tools=tools,
-            tool_choice="auto",
-            max_tokens=512,
-        )
+        try:
+            response = openai.chat.completions.create(
+                model="gpt-4o",
+                messages=messages,
+                tools=tools,
+                tool_choice="auto",
+                max_tokens=512,
+            )
+        except openai.AuthenticationError:
+            print(
+                "OpenAI authentication failed. Please set the OPENAI_API_KEY environment variable with a valid API key."
+            )
+            return
 
         msg = response.choices[0].message
 
@@ -244,9 +283,15 @@ def run_chat():
                     "name": name,
                     "content": str(result)
                 })
-            response = openai.chat.completions.create(
-                model="gpt-4o", messages=messages, tools=tools, max_tokens=512
-            )
+            try:
+                response = openai.chat.completions.create(
+                    model="gpt-4o", messages=messages, tools=tools, max_tokens=512
+                )
+            except openai.AuthenticationError:
+                print(
+                    "OpenAI authentication failed. Please set the OPENAI_API_KEY environment variable with a valid API key."
+                )
+                return
             msg = response.choices[0].message
 
         print("LeaveBot:", msg.content)

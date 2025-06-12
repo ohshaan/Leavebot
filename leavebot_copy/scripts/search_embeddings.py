@@ -8,7 +8,13 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def get_query_embedding(query, model="text-embedding-3-large"):
     # Or "text-embedding-ada-002" for legacy
-    resp = openai.embeddings.create(input=[query], model=model)
+    try:
+        resp = openai.embeddings.create(input=[query], model=model)
+    except openai.AuthenticationError:
+        print(
+            "OpenAI authentication failed. Please set the OPENAI_API_KEY environment variable with a valid API key."
+        )
+        return None
     return np.array(resp.data[0].embedding, dtype=np.float32)
 
 def cosine_sim(a, b):
@@ -20,6 +26,8 @@ def search_embeddings(query, top_k=3):
         embeddings = json.load(f)
     # Get embedding for query
     query_emb = get_query_embedding(query)
+    if query_emb is None:
+        return []
     # For each doc chunk, compute similarity
     results = []
     for chunk in embeddings:

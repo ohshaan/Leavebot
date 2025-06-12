@@ -13,7 +13,15 @@ ERP_BEARER_TOKEN = os.getenv("ERP_BEARER_TOKEN", "")
 
 RAW_DATA_PATH = os.path.join("data", "raw")
 PROCESSED_JSON_PATH = os.path.join("data", "api_json")
-DOC_EMBEDDINGS_PATH = r"C:\Users\Shahnawaz\OneDrive\Desktop\LeaveBOTv1\leavebot_copy\data\doc_embeddings\combined_doc_knowledge.json"
+
+# Build the default embeddings path relative to this settings file. This keeps
+# the configuration portable across different environments.
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+default_doc_path = os.path.join(
+    BASE_DIR, "data", "doc_embeddings", "combined_doc_knowledge.json"
+)
+# Allow overriding the embeddings path via environment variable
+DOC_EMBEDDINGS_PATH = os.getenv("DOC_EMBEDDINGS_PATH", default_doc_path)
 
 
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
