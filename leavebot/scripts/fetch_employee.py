@@ -1,5 +1,5 @@
 import requests
-from config.settings import EMPLOYEE_DETAILS_API, ERP_BEARER_TOKEN # type: ignore
+from leavebot.config.settings import EMPLOYEE_DETAILS_API, ERP_BEARER_TOKEN  # type: ignore
 from .cache_utils import EMPLOYEE_CACHE
 
 def fetch_employee_details(emp_id):

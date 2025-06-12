@@ -1,10 +1,11 @@
 import openai
 import os
 import json
-import sys
 
+# All imports below use the leavebot package structure, so no manual path
+# manipulation is required when this module is executed as part of the package.
 
-from scripts.leave_utils import (
+from ..scripts.leave_utils import (
     total_leave_taken,
     leaves_by_type,
     available_leave_types,
@@ -12,17 +13,17 @@ from scripts.leave_utils import (
     is_on_leave_today,
     recent_leaves,
 )
-from scripts.employee_utils import (
+from ..scripts.employee_utils import (
     years_of_service,
     employee_contact_summary,
     get_manager_details
 )
-from scripts.fetch_employee import fetch_employee_details
-from scripts.fetch_leave_types import fetch_leave_types
-from scripts.fetch_leave_balance import fetch_leave_balance
-from scripts.fetch_leave_history import fetch_leave_history  # now expects (emp_id, leave_types)
-from scripts.search_embeddings import search_embeddings  # RAG tool
-from scripts.air_ticket_utils import air_ticket_info
+from ..scripts.fetch_employee import fetch_employee_details
+from ..scripts.fetch_leave_types import fetch_leave_types
+from ..scripts.fetch_leave_balance import fetch_leave_balance
+from ..scripts.fetch_leave_history import fetch_leave_history  # now expects (emp_id, leave_types)
+from ..scripts.search_embeddings import search_embeddings  # RAG tool
+from ..scripts.air_ticket_utils import air_ticket_info
 
 
 # Setup OpenAI API key

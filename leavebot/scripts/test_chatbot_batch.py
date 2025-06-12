@@ -6,13 +6,14 @@ import openai
 # Add leavebot_copy as a package root for imports
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, '..'))
+REPO_ROOT = os.path.abspath(os.path.join(PROJECT_ROOT, '..'))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-from chatbot import chat_engine
-from config.settings import DOC_EMBEDDINGS_PATH
+from ..chatbot import chat_engine
+from ..config.settings import DOC_EMBEDDINGS_PATH
 
-QUESTIONS_FILE = os.path.join(os.path.dirname(__file__), '..', 'questions.txt')
+QUESTIONS_FILE = os.path.join(REPO_ROOT, 'questions.txt')
 
 def run_batch_test(emp_id=5469, questions_file=QUESTIONS_FILE):
     # Reset chatbot state for each test session
