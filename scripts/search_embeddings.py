@@ -2,7 +2,7 @@ import os
 import json
 import numpy as np
 import openai
-from leavebot_copy.config.settings import DOC_EMBEDDINGS_PATH
+from config.settings import DOC_EMBEDDINGS_PATH
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 

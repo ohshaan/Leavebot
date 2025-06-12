@@ -10,7 +10,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from chatbot import chat_engine
-from leavebot_copy.config.settings import DOC_EMBEDDINGS_PATH
+from config.settings import DOC_EMBEDDINGS_PATH
 
 QUESTIONS_FILE = os.path.join(os.path.dirname(__file__), '..', 'questions.txt')
 

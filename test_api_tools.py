@@ -1,11 +1,11 @@
-from leavebot_copy.scripts.fetch_employee import fetch_employee_details
-from leavebot_copy.scripts.fetch_leave_types import fetch_leave_types
-from leavebot_copy.scripts.fetch_leave_balance import fetch_leave_balance
-from leavebot_copy.scripts.fetch_leave_history import fetch_leave_history
-from leavebot_copy.scripts.fetch_manager import get_manager_contact   # <--- NEW
-from leavebot_copy.scripts.search_embeddings import search_embeddings
-from leavebot_copy.scripts.leave_utils import recent_leaves
-from leavebot_copy.scripts.air_ticket_utils import air_ticket_info
+from scripts.fetch_employee import fetch_employee_details
+from scripts.fetch_leave_types import fetch_leave_types
+from scripts.fetch_leave_balance import fetch_leave_balance
+from scripts.fetch_leave_history import fetch_leave_history
+from scripts.fetch_manager import get_manager_contact   # <--- NEW
+from scripts.search_embeddings import search_embeddings
+from scripts.leave_utils import recent_leaves
+from scripts.air_ticket_utils import air_ticket_info
 
 def pretty_print(title, obj):
     import json

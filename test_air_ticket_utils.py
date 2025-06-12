@@ -1,5 +1,5 @@
 import unittest
-from leavebot_copy.scripts.air_ticket_utils import next_air_ticket_eligibility
+from scripts.air_ticket_utils import next_air_ticket_eligibility
 
 class TestAirTicketUtils(unittest.TestCase):
     def test_next_air_ticket_eligibility_multiple_formats(self):

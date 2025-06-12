@@ -1,7 +1,7 @@
 # leavebot_copy/scripts/fetch_leave_types.py
 
 import requests
-from leavebot_copy.config.settings import LEAVE_TYPE_API, ERP_BEARER_TOKEN
+from config.settings import LEAVE_TYPE_API, ERP_BEARER_TOKEN
 from .cache_utils import LEAVE_TYPES_CACHE
 
 def fetch_leave_types(emp_id, cgm_id=1):
