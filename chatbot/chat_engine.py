@@ -26,24 +26,25 @@ from leavebot_copy.scripts.air_ticket_utils import air_ticket_info
 # Setup OpenAI API key
 openai.api_key = os.getenv("OPENAI_API_KEY", "")
 
-# Pre-fetch/cached API data for the session (do once per session/user)
-EMP_ID     = 5469
-CGM_ID     = 1
-FROM_DATE  = "2024-01-01"
-TO_DATE    = "2024-12-31"
+# Globals populated by preload_data()
+employee = None
+leave_types = None
+leave_history = None
+leave_balances = None
+manager = None
 
-employee    = fetch_employee_details(EMP_ID)
-leave_types = fetch_leave_types(EMP_ID, CGM_ID)
-# Pass leave_types into fetch_leave_history so each record gets its code
-leave_history = fetch_leave_history(EMP_ID, leave_types)
 
-# Build leave_balances keyed by Lpd_ID_N
-leave_balances = {
-    lt["Lpd_ID_N"]: fetch_leave_balance(EMP_ID, lt["Lpd_ID_N"], FROM_DATE, TO_DATE)
-    for lt in leave_types
-}
-
-manager = get_manager_details(employee, fetch_employee_details)
+def preload_data(emp_id, from_date, to_date, cgm_id=1):
+    """Fetch and cache employee-related data for the session."""
+    employee = fetch_employee_details(emp_id)
+    leave_types = fetch_leave_types(emp_id, cgm_id)
+    leave_history = fetch_leave_history(emp_id, leave_types)
+    leave_balances = {
+        lt["Lpd_ID_N"]: fetch_leave_balance(emp_id, lt["Lpd_ID_N"], from_date, to_date)
+        for lt in leave_types
+    }
+    manager = get_manager_details(employee, fetch_employee_details)
+    return employee, leave_types, leave_history, leave_balances, manager
 
 # --- TOOL DEFINITIONS ---
 
@@ -235,14 +236,39 @@ def route_tool(tool_name, args=None):
     return TOOL_MAP[tool_name](**(args or {}))
 
 # ---- CHATBOT LOOP (WITH MULTI-STEP TOOL CALLING SUPPORT) ----
-def run_chat():
+def stream_completion(messages):
+    """Stream the assistant's reply and return the full text."""
+    response = openai.chat.completions.create(
+        model=os.getenv("OPENAI_MODEL", "gpt-4o"),
+        messages=messages,
+        tools=tools,
+        max_tokens=512,
+        stream=True,
+    )
+    full = ""
+    for chunk in response:
+        delta = chunk.choices[0].delta
+        if delta.content:
+            print(delta.content, end="", flush=True)
+            full += delta.content
+    print()
+    return full
+
+
+def run_chat(emp_id=5469, from_date="2024-01-01", to_date="2024-12-31", history_length=20):
+    global employee, leave_types, leave_history, leave_balances, manager
+
+    employee, leave_types, leave_history, leave_balances, manager = preload_data(
+        emp_id, from_date, to_date
+    )
+
     print("LeaveBot: Ask your question (type 'exit' to quit):")
     messages = [{
         "role": "system",
         "content": (
             "You are LeaveBot, a helpful HR and policy assistant. "
             "If a user asks a question not directly answerable by API or calculations, use the search_policy tool."
-        )
+        ),
     }]
 
     while True:
@@ -253,7 +279,7 @@ def run_chat():
         messages.append({"role": "user", "content": user_input})
         try:
             response = openai.chat.completions.create(
-                model="gpt-4o",
+                model=os.getenv("OPENAI_MODEL", "gpt-4o"),
                 messages=messages,
                 tools=tools,
                 tool_choice="auto",
@@ -271,7 +297,7 @@ def run_chat():
         while hasattr(msg, "tool_calls") and msg.tool_calls:
             messages.append({
                 "role": "assistant",
-                "tool_calls": [c.model_dump() for c in msg.tool_calls]
+                "tool_calls": [c.model_dump() for c in msg.tool_calls],
             })
             for call in msg.tool_calls:
                 name = call.function.name
@@ -281,11 +307,14 @@ def run_chat():
                     "role": "tool",
                     "tool_call_id": call.id,
                     "name": name,
-                    "content": str(result)
+                    "content": str(result),
                 })
             try:
                 response = openai.chat.completions.create(
-                    model="gpt-4o", messages=messages, tools=tools, max_tokens=512
+                    model=os.getenv("OPENAI_MODEL", "gpt-4o"),
+                    messages=messages,
+                    tools=tools,
+                    max_tokens=512,
                 )
             except openai.AuthenticationError:
                 print(
@@ -294,9 +323,22 @@ def run_chat():
                 return
             msg = response.choices[0].message
 
-        print("LeaveBot:", msg.content)
-        messages.append({"role": "assistant", "content": msg.content})
+        # Stream the final assistant message
+        final_text = stream_completion(messages)
+        messages.append({"role": "assistant", "content": final_text})
+
+        if history_length:
+            messages = [messages[0]] + messages[-history_length:]
 
 
 if __name__ == "__main__":
-    run_chat()
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Interactive LeaveBot chat")
+    parser.add_argument("--emp-id", type=int, default=5469, help="Employee ID")
+    parser.add_argument("--from-date", default="2024-01-01", help="Start date for balances/history")
+    parser.add_argument("--to-date", default="2024-12-31", help="End date for balances/history")
+    parser.add_argument("--history-length", type=int, default=20, help="Number of messages of history to retain")
+    args = parser.parse_args()
+
+    run_chat(args.emp_id, args.from_date, args.to_date, args.history_length)
