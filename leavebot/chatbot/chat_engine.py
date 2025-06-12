@@ -1,3 +1,4 @@
+from ..config import settings
 import openai
 import os
 import json
@@ -26,8 +27,7 @@ from ..scripts.search_embeddings import search_embeddings  # RAG tool
 from ..scripts.air_ticket_utils import air_ticket_info
 
 
-# Setup OpenAI API key
-openai.api_key = os.getenv("OPENAI_API_KEY", "")
+# OpenAI key is configured in settings when the module is imported above
 
 # Globals populated by preload_data()
 employee = None

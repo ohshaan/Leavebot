@@ -1,4 +1,5 @@
 import os
+import openai
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -9,6 +10,7 @@ LEAVE_HISTORY_API = os.getenv("LEAVE_HISTORY_API", "http://localhost/api/LeaveAp
 LEAVE_SUMMARY_API = os.getenv("LEAVE_SUMMARY_API", "http://localhost/api/LeaveApplicationApi")
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+openai.api_key = OPENAI_API_KEY
 ERP_BEARER_TOKEN = os.getenv("ERP_BEARER_TOKEN", "")
 
 RAW_DATA_PATH = os.path.join("data", "raw")

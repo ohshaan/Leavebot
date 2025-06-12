@@ -1,10 +1,10 @@
 import os
 import json
 import numpy as np
+from leavebot.config import settings
 import openai
-from leavebot.config.settings import DOC_EMBEDDINGS_PATH
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+DOC_EMBEDDINGS_PATH = settings.DOC_EMBEDDINGS_PATH
 
 def get_query_embedding(query, model="text-embedding-3-large"):
     # Or "text-embedding-ada-002" for legacy
