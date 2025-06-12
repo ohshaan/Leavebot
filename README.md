@@ -38,10 +38,4 @@ Replace `<emp_id>` with the employee ID you want to test. The script at `leavebo
 ## Dependencies
 
 The project relies on several internal API endpoints for employee data. These URLs and an authentication token (`ERP_BEARER_TOKEN`) must be supplied via environment variables. In addition, an `OPENAI_API_KEY` is required for both chat completion and embedding search features.
-===
-# Leavebot
-====
-
-This repository contains the code for Leavebot, a simple chatbot for handling leave-related queries.
-
 
