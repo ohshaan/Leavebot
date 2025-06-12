@@ -1,5 +1,6 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 "What is my air ticket eligibility status?"
 
 "When can I next claim an air ticket?"
@@ -19,6 +20,65 @@
 "Tell me about my most recent sick or casual leaves." (returns recent leaves of any type)
 
 "What was my last approved leave?"
+=======
+# Questions Answerable from Embedded Documents (Doc Q&A)
+What are the objectives of the HR manual?
+Who is responsible for implementing the HR policy?
+Are the company’s HR policies compliant with Qatar labour law?
+How can the HR policy be revised or updated?
+What is the process for applying for sick leave?
+What documents are required for applying for sick leave?
+What is the maximum number of paid sick leave days per year?
+Is sick leave allowed during probation?
+What is the process for applying for annual leave?
+What are the rules for emergency leave?
+Can I apply for leave verbally?
+Who approves leave applications?
+What happens if I fall sick during annual leave?
+What is the company's policy on overtime?
+Are employees entitled to job-related allowances during sick leave?
+How do I escalate an HR complaint?
+What is the disciplinary procedure for misconduct?
+Who should employees contact for HR queries?
+What are the company’s policies on late attendance?
+
+# Questions Answerable from API Calls (Real-Time Data)
+What is my current leave balance?
+How many sick leave days have I taken this year?
+Do I have enough annual leave for my requested dates?
+What is the status of my pending leave application?
+When does my probation period end?
+What is my next scheduled holiday?
+Who is my reporting manager?
+What are my approved salary components this month?
+What is my most recent payroll deduction?
+Can you show my attendance report for this month?
+What is my current designation and department?
+Which documents have I submitted for HR compliance?
+
+# Hybrid Questions (Policy + Personal Data/Status)
+How do I apply for sick leave, and how many sick leave days do I have left?
+Am I eligible to take annual leave next month, and what is the approval process?
+What supporting documents do I need to attach to my leave application, and have I already submitted them?
+What happens if I exceed my paid sick leave entitlement, and how many sick leave days remain in my account?
+What is the company’s policy for overtime, and how many overtime hours have I logged this month?
+Am I allowed to work from home, and have any work-from-home days been recorded for me this year?
+What is the disciplinary procedure for repeated late attendance, and how many times have I been late this quarter?
+How do I escalate an HR complaint, and has my previous complaint been resolved?
+
+# Missing Policy (Edge/Fallback Testing)
+Can I split my annual leave into two periods as per labor law?
+Am I eligible for air tickets if I split my annual leave into different periods?
+Can I take leave before completing 1 year of service?
+Can I cancel or reschedule my approved leave?
+Does my air ticket entitlement change if I split my annual leave?
+What happens if I cancel approved leave at short notice?
+Can my manager deny my annual leave split request?
+Does the company allow unpaid leave during probation?
+If I travel during sick leave, will my air ticket be reimbursed?
+Are there any restrictions on combining different types of leave?
+
+>>>>>>> Stashed changes
 =======
 # Questions Answerable from Embedded Documents (Doc Q&A)
 What are the objectives of the HR manual?
