@@ -3,8 +3,6 @@ import os
 import json
 import sys
 
-# Add the parent directory of leavebot_copy to sys.path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 from scripts.leave_utils import (
     total_leave_taken,
