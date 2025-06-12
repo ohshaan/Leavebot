@@ -1,0 +1,20 @@
+1. How many annual leave days have I taken?
+2. How many sick leaves have I taken this year?
+3. What is the total number of leaves I have taken across all types?
+4. How many casual leaves have I taken so far?
+5. What is my current annual leave balance?
+6. What is my sick leave balance?
+7. How many SLN (sick leave without pay) days have I taken?
+8. How many SLH (sick leave half pay) days have I taken?
+9. How many SL (sick leave full pay) days have I taken?
+10. What are my available leave types?
+11. Am I currently on leave today?
+12. When does my leave balance reset?
+13. List my total leaves by leave type.
+14. What is my remaining casual leave balance?
+15. Give me a summary of all my leave codes and how many days I have taken for each.
+16. How many leaves did I take as “Casual Leave Staff”?
+17. What is my total number of unpaid sick leave days this year?
+18. How many emergency leaves (EL) have I used?
+19. How many days of compassionate leave (CMP) have I taken?
+20. How many leaves in total have I taken that are not annual or sick leave?
