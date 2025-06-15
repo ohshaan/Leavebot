@@ -1,6 +1,6 @@
 # leave_utils.py
 from datetime import datetime
-from collections import Counter, defaultdict
+from collections import Counter
 
 def build_leave_mappings(leave_types):
     """
@@ -23,46 +23,21 @@ def build_leave_mappings(leave_types):
     }
     return code_to_desc, desc_to_code, code_to_lpdid
 
-def build_leave_type_groups(leave_types):
+def total_leave_taken(leave_history, leave_types, code_or_desc=None):
     """
-    Build groupings like 'sick', 'casual', 'annual', 'emergency' based on keywords in descriptions.
-    Returns: dict of {group_name: set_of_codes}
-    """
-    groups = defaultdict(set)
-    for lt in leave_types:
-        code = lt.get("Lvm_Code_V", "")
-        desc = (lt.get("Lvm_Description_V") or "").upper()
-        if "SICK" in desc:
-            groups["sick"].add(code)
-        if "CASUAL" in desc:
-            groups["casual"].add(code)
-        if "ANNUAL" in desc:
-            groups["annual"].add(code)
-        if "EMERGENCY" in desc:
-            groups["emergency"].add(code)
-    return dict(groups)
-
-def total_leave_taken(leave_history, leave_types, code_or_group=None):
-    """
-    Sum leave days taken for a specific code, description, or group.
+    Sum leave days taken for a specific code or description.
     Only includes approved leaves.
+    If code_or_desc is None, totals across all codes.
     """
     code_to_desc, desc_to_code, _ = build_leave_mappings(leave_types)
-    groups = build_leave_type_groups(leave_types)
-
-    if not code_or_group:
+    if not code_or_desc:
         codes = {rec.get("LeaveGrid_Lvm_Code_V") for rec in leave_history}
+    elif code_or_desc in code_to_desc:
+        codes = {code_or_desc}
+    elif code_or_desc in desc_to_code:
+        codes = {desc_to_code[code_or_desc]}
     else:
-        grp = groups.get(str(code_or_group).lower())
-        if grp:
-            codes = grp
-        elif code_or_group in code_to_desc:
-            codes = {code_or_group}
-        elif code_or_group in desc_to_code:
-            codes = {desc_to_code[code_or_group]}
-        else:
-            codes = {code_or_group}
-
+        codes = {code_or_desc}
     total = 0.0
     for rec in leave_history:
         if rec.get("LeaveGrid_Status") != "Approved":
@@ -239,6 +214,7 @@ def get_employee_anniversary(employee_record):
         return dt.strftime("%Y-%m-%d")
     except Exception:
         return raw_date  # fallback to original
+
 def unapproved_leaves(leave_history):
     """
     Returns a list of leave records that are not approved (status != 'Approved').
@@ -247,7 +223,6 @@ def unapproved_leaves(leave_history):
         rec for rec in leave_history
         if rec.get("LeaveGrid_Status", "").strip().lower() != "approved"
     ]
-
 
 def get_user_leave_overview(employee_record, leave_balances, leave_history, leave_types):
     """

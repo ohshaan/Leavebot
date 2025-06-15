@@ -9,12 +9,12 @@ from ..core.leave_utils import (
     leave_type_balance,
     is_on_leave_today,
     recent_leaves,
-    unapproved_leaves,    # <- Make sure to import this!
+    unapproved_leaves,
 )
 from ..core.employee_utils import (
     years_of_service,
     employee_contact_summary,
-    get_manager_details
+    get_manager_details,
 )
 from ..api.fetch_employee import fetch_employee_details
 from ..api.fetch_leave_types import fetch_leave_types
@@ -25,7 +25,6 @@ from ..core.air_ticket_utils import air_ticket_info
 
 openai.api_key = os.getenv("OPENAI_API_KEY", "")
 
-# --- TOOL SCHEMA ---
 tools = [
     {
         "type": "function",
@@ -119,8 +118,14 @@ tools = [
         "type": "function",
         "function": {
             "name": "air_ticket_info",
-            "description": "Returns air ticket eligibility information.",
-            "parameters": {"type": "object", "properties": {}},
+            "description": "Returns air ticket eligibility information for the given leave code.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "leave_code": {"type": "string", "description": "The leave code to check air ticket eligibility for"}
+                },
+                "required": ["leave_code"]
+            },
         },
     },
     {
@@ -155,6 +160,19 @@ tools = [
     },
 ]
 
+SYSTEM_PROMPT = {
+    "role": "system",
+    "content": (
+        "You are LeaveBot, a helpful HR assistant. "
+        "Whenever a user asks about leave application or how to apply for leave, "
+        "always first provide clear, step-by-step instructions on using the HRM portal form and Employee Self-Service (ESS) system, "
+        "including which menus to navigate and what fields to fill out. "
+        "Only after giving this practical process help, provide relevant policy or eligibility information as a secondary reference. "
+        "Make the practical application instructions the main focus."
+    )
+}
+
+
 class ChatEngine:
     """Encapsulates chatbot state and interactions."""
 
@@ -176,19 +194,22 @@ class ChatEngine:
             "recent_leaves": self.tool_recent_leaves,
             "air_ticket_info": self.tool_air_ticket_info,
             "search_policy": self.tool_search_policy,
-            "unapproved_leaves": self.tool_unapproved_leaves,  # <-- ADDED
+            "unapproved_leaves": self.tool_unapproved_leaves,
         }
 
-    # --- DATA PRELOAD ---
     def preload_data(self, emp_id, from_date, to_date, cgm_id=1):
         """Fetch and cache employee-related data for the session."""
         self.employee = fetch_employee_details(emp_id)
         self.leave_types = fetch_leave_types(emp_id, cgm_id)
         self.leave_history = fetch_leave_history(emp_id, self.leave_types)
-        self.leave_balances = {
-            lt["Lpd_ID_N"]: fetch_leave_balance(emp_id, lt["Lpd_ID_N"], from_date, to_date)
-            for lt in self.leave_types
-        }
+        self.leave_balances = {}
+        for lt in self.leave_types:
+            bal = fetch_leave_balance(emp_id, lt["Lpd_ID_N"], from_date, to_date)
+            if isinstance(bal, list) and bal:
+                bal = bal[0]
+            if bal:
+                bal["Lvm_Code_V"] = lt.get("Lvm_Code_V", "")
+                self.leave_balances[lt["Lpd_ID_N"]] = bal
         self.manager = get_manager_details(self.employee, fetch_employee_details)
         return (
             self.employee,
@@ -228,8 +249,8 @@ class ChatEngine:
     def tool_recent_leaves(self, count=5, **kwargs):
         return recent_leaves(self.leave_history, count=count)
 
-    def tool_air_ticket_info(self, **kwargs):
-        return air_ticket_info(self.leave_balances, self.leave_history)
+    def tool_air_ticket_info(self, leave_code=None, **kwargs):
+        return air_ticket_info(self.leave_balances, self.leave_history, leave_code=leave_code)
 
     def tool_search_policy(self, question=None, **kwargs):
         results = search_embeddings(question, top_k=2)
@@ -237,11 +258,10 @@ class ChatEngine:
             return "No relevant policy or HR information found."
         answer = ""
         for idx, chunk in enumerate(results, 1):
-            answer += f"{idx}. {chunk['chunk'].strip()}\n\n"
+            answer += f"{idx}. {chunk.get('chunk', chunk.get('text','')).strip()}\n\n"
         return answer.strip()
 
     def tool_unapproved_leaves(self, status=None, **kwargs):
-        """Return all unapproved leave applications, optionally filtered by status."""
         unapproved = unapproved_leaves(self.leave_history)
         if status:
             status_lower = status.strip().lower()
@@ -261,14 +281,27 @@ class ChatEngine:
             )
         return result.strip()
 
-    # ---- TOOL ROUTER ----
     def route_tool(self, tool_name, args=None):
         if tool_name not in self.TOOL_MAP:
             return "Tool not implemented."
         return self.TOOL_MAP[tool_name](**(args or {}))
 
-    # ---- CHATBOT LOOP (WITH MULTI-STEP TOOL CALLING SUPPORT) ----
-    def stream_completion(self, messages):
+    def fallback_with_policy_search(self, user_question, response):
+        # Always run policy search for demo/verification!
+        print(f"DEBUG: Running policy search for: {user_question}")
+        policy_snippet = self.tool_search_policy(question=user_question)
+        print(f"DEBUG: Policy search result: {policy_snippet}")
+        if policy_snippet and "No relevant policy" not in policy_snippet:
+            response = (
+                response.strip() +
+                "\n\n*Policy reference:*\n" + policy_snippet.strip()
+            )
+        return response
+
+    def stream_completion(self, messages, user_input=None):
+        if not messages or messages[0].get("role") != "system":
+            messages = [SYSTEM_PROMPT] + messages
+
         response = openai.chat.completions.create(
             model=os.getenv("OPENAI_MODEL", "gpt-4o"),
             messages=messages,
@@ -302,4 +335,7 @@ class ChatEngine:
             )
             msg = response.choices[0].message
 
-        return msg.content if msg.content else "No answer returned."
+        if user_input:
+            return self.fallback_with_policy_search(user_input, msg.content if msg.content else "No answer returned.")
+        else:
+            return msg.content if msg.content else "No answer returned."

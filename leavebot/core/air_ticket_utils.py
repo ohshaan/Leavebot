@@ -44,10 +44,14 @@ def has_claimed_air_ticket(leave_history, year=None):
     return False
 
 
-def air_ticket_info(leave_balances, leave_history):
-    """Return eligibility details for employee air ticket."""
+def air_ticket_info(leave_balances, leave_history, leave_code=None):
+    """
+    Return eligibility details for employee air ticket, optionally filtered by leave_code.
+    """
     eligible_balance = None
     for lb in leave_balances.values():
+        if leave_code and lb.get("Lvm_Code_V") != leave_code:
+            continue
         if is_air_ticket_eligible(lb):
             eligible_balance = lb
             break
@@ -72,5 +76,6 @@ def air_ticket_info(leave_balances, leave_history):
         "next_eligible_date": next_date,
         "last_claim_date": last_claim,
     }
+
 
 # Add additional helper functions here as required.

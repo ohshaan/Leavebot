@@ -35,9 +35,10 @@ def search_embeddings(query, top_k=3):
         sim = cosine_sim(query_emb, chunk_emb)
         results.append({
             "similarity": float(sim),
-            "chunk": chunk.get("chunk", ""),
-            "document": chunk.get("document", ""),
+            "chunk": chunk.get("text", ""),         # <-- changed "chunk" to "text"
+            "document": chunk.get("source", ""),    # <-- changed "document" to "source"
         })
+
     # Sort by similarity descending, return top_k
     results.sort(key=lambda x: x["similarity"], reverse=True)
     return results[:top_k]
