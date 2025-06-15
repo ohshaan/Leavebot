@@ -1,5 +1,4 @@
-# Helper utilities for computing leave statistics
-
+# leave_utils.py
 from datetime import datetime
 from collections import Counter, defaultdict
 
@@ -26,7 +25,7 @@ def build_leave_mappings(leave_types):
 
 def build_leave_type_groups(leave_types):
     """
-    Build groupings like 'sick', 'casual', 'annual' based on keywords in descriptions.
+    Build groupings like 'sick', 'casual', 'annual', 'emergency' based on keywords in descriptions.
     Returns: dict of {group_name: set_of_codes}
     """
     groups = defaultdict(set)
@@ -45,16 +44,12 @@ def build_leave_type_groups(leave_types):
 
 def total_leave_taken(leave_history, leave_types, code_or_group=None):
     """
-    Sum leave days taken.
-    - If code_or_group is a known group (e.g. 'sick'), sum for all codes in that group.
-    - If it's a code (e.g. 'AL'), sum for just that code.
-    - If it's a description (e.g. 'Annual Leave'), map to code.
-    - If None, sum all leaves.
+    Sum leave days taken for a specific code, description, or group.
+    Only includes approved leaves.
     """
     code_to_desc, desc_to_code, _ = build_leave_mappings(leave_types)
     groups = build_leave_type_groups(leave_types)
 
-    # Resolve input into one or more codes
     if not code_or_group:
         codes = {rec.get("LeaveGrid_Lvm_Code_V") for rec in leave_history}
     else:
@@ -70,6 +65,8 @@ def total_leave_taken(leave_history, leave_types, code_or_group=None):
 
     total = 0.0
     for rec in leave_history:
+        if rec.get("LeaveGrid_Status") != "Approved":
+            continue
         if rec.get("LeaveGrid_Lvm_Code_V") in codes:
             try:
                 total += float(rec.get("LeaveGrid_Ela_Tot", 0) or 0)
@@ -79,31 +76,42 @@ def total_leave_taken(leave_history, leave_types, code_or_group=None):
 
 def leaves_by_type(leave_history, leave_types):
     """
-    Return dict of total leave days taken, keyed by leave code,
-    with description and days.
+    Returns dict: {description: total_days} for user display, only approved leaves.
     """
+    code_to_desc, _, _ = build_leave_mappings(leave_types)
     result = {}
     for rec in leave_history:
+        if rec.get("LeaveGrid_Status") != "Approved":
+            continue
         code = rec.get("LeaveGrid_Lvm_Code_V")
         try:
             days = float(rec.get("LeaveGrid_Ela_Tot", 0) or 0)
         except ValueError:
             days = 0.0
         if code:
-            result[code] = result.get(code, 0.0) + days
+            desc = code_to_desc.get(code, code)
+            result[desc] = result.get(desc, 0.0) + days
+    return result
 
-    code_to_desc, _, _ = build_leave_mappings(leave_types)
-    return {
-        code: {"desc": code_to_desc.get(code, ""), "days": days}
-        for code, days in result.items()
-    }
+def format_leave_summary(summary_dict):
+    """
+    Formats the leave summary for user-friendly display.
+    """
+    if not summary_dict:
+        return "No approved leave records found."
+    lines = ["Leave Summary:"]
+    for desc, days in summary_dict.items():
+        lines.append(f"- {desc}: {days:.1f} days taken")
+    return "\n".join(lines)
 
 def is_on_leave_today(leave_history):
     """
-    Return True if employee is on leave today (for any type).
+    Return True if employee is on leave today (for any type, only approved leaves).
     """
     today = datetime.today().date()
     for rec in leave_history:
+        if rec.get("LeaveGrid_Status") != "Approved":
+            continue
         from_str = (rec.get("LeaveGrid_Ela_FromDate_D") or "")[:10]
         to_str   = (rec.get("LeaveGrid_Ela_ToDate_D")   or "")[:10]
         try:
@@ -164,10 +172,10 @@ def leave_codes_summary(leave_history):
     """
     return Counter(rec.get("LeaveGrid_Lvm_Code_V") for rec in leave_history)
 
-
 def recent_leaves(leave_history, count=5):
-    """Return a list of the most recent leave records."""
-
+    """
+    Return a list of the most recent approved leave records.
+    """
     def parse_date(date_str):
         if not date_str:
             return None
@@ -178,8 +186,9 @@ def recent_leaves(leave_history, count=5):
                 continue
         return None
 
+    filtered = [rec for rec in leave_history if rec.get("LeaveGrid_Status") == "Approved"]
     sorted_history = sorted(
-        leave_history,
+        filtered,
         key=lambda rec: parse_date(rec.get("LeaveGrid_Ela_FromDate_D")) or datetime.min,
         reverse=True,
     )
@@ -196,3 +205,70 @@ def recent_leaves(leave_history, count=5):
             }
         )
     return result
+
+def get_air_ticket_eligibility(leave_balance_record):
+    """
+    Returns human-readable air ticket eligibility based on Airticket flag.
+    """
+    flag = leave_balance_record.get("Airticket")
+    if flag == "1":
+        return "Eligible"
+    if flag == "0":
+        return "Not Eligible"
+    return "Unknown"
+
+def get_employee_full_name(employee_record):
+    """
+    Returns the employee's full name for display.
+    """
+    return (
+        employee_record.get("Emp_EFullName_V")
+        or employee_record.get("Emp_EDisplayName_V")
+        or "Unknown"
+    )
+
+def get_employee_anniversary(employee_record):
+    """
+    Returns anniversary date in ISO (YYYY-MM-DD) format if available.
+    """
+    raw_date = employee_record.get("Emp_AnnivDate_D")
+    if not raw_date:
+        return "Unknown"
+    try:
+        dt = datetime.strptime(raw_date, "%d-%b-%Y")
+        return dt.strftime("%Y-%m-%d")
+    except Exception:
+        return raw_date  # fallback to original
+def unapproved_leaves(leave_history):
+    """
+    Returns a list of leave records that are not approved (status != 'Approved').
+    """
+    return [
+        rec for rec in leave_history
+        if rec.get("LeaveGrid_Status", "").strip().lower() != "approved"
+    ]
+
+
+def get_user_leave_overview(employee_record, leave_balances, leave_history, leave_types):
+    """
+    Returns a ready-to-display summary of the employee's leave and air ticket status.
+    """
+    name = get_employee_full_name(employee_record)
+    anniversary = get_employee_anniversary(employee_record)
+    air_ticket_elig = (
+        get_air_ticket_eligibility(leave_balances[0])
+        if leave_balances and "Airticket" in leave_balances[0]
+        else "Unknown"
+    )
+    leave_summary = leaves_by_type(leave_history, leave_types)
+    return f"""Employee: {name}
+Anniversary: {anniversary}
+Air Ticket Eligibility: {air_ticket_elig}
+
+{format_leave_summary(leave_summary)}
+"""
+
+# Uncomment to test directly
+# if __name__ == "__main__":
+#     # You can put test loads here for debugging
+#     pass

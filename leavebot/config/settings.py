@@ -20,7 +20,7 @@ PROCESSED_JSON_PATH = os.path.join("data", "api_json")
 # leavebot/config/, so we need to go three directories up.
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 default_doc_path = os.path.join(
-    BASE_DIR, "data", "doc_embeddings", "combined_doc_knowledge.json"
+    BASE_DIR, "data", "combined_doc_knowledge.json"
 )
 # Allow overriding the embeddings path via environment variable
 DOC_EMBEDDINGS_PATH = os.getenv("DOC_EMBEDDINGS_PATH", default_doc_path)
